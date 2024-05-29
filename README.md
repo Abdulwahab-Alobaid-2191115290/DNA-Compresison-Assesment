@@ -10,3 +10,5 @@ algorithms to determine their efficiency in reducing
 the length of the encoded DNA holding data and optimizing its storage in DNA molecules. The comparison
 involves analyzing information density and compression ratio. Results highlight the strengths and limitations of the tested techniques, providing insights into
 their applicability on a large scale.
+
+![](figs/flowchart.png)
