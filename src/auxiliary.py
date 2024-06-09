@@ -3,7 +3,21 @@ import os
 
 # algorithms sends their data to this function to generate output in a suitable format (.csv)
 def output(method, filepath, content_size, information_density, compression_ratio):
-    filename, extension = filepath.split('\\')[-1].rsplit('.', 1)
+
+    # thanks to windows, if running script from terminal the path uses \ regardless what
+    # you exactly type in the terminal. if running script using 'subprocess' library the path uses
+    # the other slash i.e. /
+    # so to fix this we check first what slash type is passed to the function
+    # PS: this also means if the input filename includes slashes; it will pose a problem
+    if '/' in filepath:
+        filename, extension = filepath.split('/')[-1].rsplit('.', 1)
+    elif '\\' in filepath:
+        filename, extension = filepath.split('\\')[-1].rsplit('.', 1)
+    else:
+        print('ERROR: slash character in the path is not \\ or /')
+        exit(-1)
+
+    # if file exists, append new entry, else create the file and add the headers
     output_path = f'./src/output/{method}_{filename}.csv'
     if not os.path.exists(output_path):
         file = open(output_path, 'w')
