@@ -13,3 +13,17 @@ def output(method, filepath, content_size, information_density, compression_rati
 
     file.write(f'{method},{filename},{extension},{content_size},{information_density},{compression_ratio}\n')
     file.close()
+
+# converts two-bit binary to a nucleotide
+def bin_to_base(bin):
+    if bin == '00':
+        return 'A'
+
+    if bin == '01':
+        return 'T'
+
+    if bin == '10':
+        return 'C'
+
+    if bin == '11':
+        return 'G'

@@ -1,12 +1,11 @@
 import sys
-import sys
 import os
 
 # so we can import aux
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import auxiliary as aux
 
-# command line args
+# command line args: each algorithm takes input file in command line
 if len(sys.argv[1:]) != 1:
     print(f'Error: invalid args')
     print(f'Usage: py {sys.argv[0]} <input file>')
@@ -18,49 +17,39 @@ file = open(filepath, 'r')
 src = file.read()
 file.close()
 
-def bin_to_base(bin):
-    if bin == '00':
-        return 'A'
 
-    if bin == '01':
-        return 'T'
-
-    if bin == '10':
-        return 'C'
-
-    if bin == '11':
-        return 'G'
-
-
+# getting the binary representation of the file
 src_binary = ''
 for char in src:
     block = '0'+bin(ord(char))[2:]
     src_binary += block
 
+# appending 0s if length is odd
 if len(src_binary) % 2 != 0:
     src_binary = '0' + src_binary
-print(src_binary)
+
+# basic encoding implementation: split into two-bit strings -> convert to base -> append bases
 encoding = ''
 src_binary_tmp = src_binary
-print(len(src_binary_tmp))
 while len(src_binary_tmp) != 0:
     bin = src_binary_tmp[:2]
-    encoding += bin_to_base(bin)
+    encoding += aux.bin_to_base(bin)
     src_binary_tmp = src_binary_tmp[2:]
 
-
-print(encoding)
-
+# calculate evaluation metrics
 bits = len(src_binary)
 bases = len(encoding)
 information_density = bits / bases
 compressed_size = bases*2
 compression_ratio = bits / compressed_size
 
+# print results
+print(encoding)
 print(f'information density {bits/bases}, compression ratio {compression_ratio}')
 
+# generate output
 aux.output(
-        method='naive',
+        method='basic',
         filepath=filepath,
         content_size=len(src),
         information_density=information_density,

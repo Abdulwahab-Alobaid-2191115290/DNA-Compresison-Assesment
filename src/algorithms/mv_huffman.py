@@ -11,6 +11,7 @@ def get_key_from_val(val, d):
         if d[key] == val:
             return key
 
+# nodes definition that will be used to implement m.v. huffman tree
 class Node:
     def __init__(self, symbol=None, pfreq=0, left=None, right=None, distance=0, path=''):
         self.symbol = symbol
@@ -22,7 +23,7 @@ class Node:
         self.right = right
         self.path = path
 
-
+    # prints the tree nicely, used for debugging, but becomes crowded on large input
     def visual_print(self, indent=0):
         if self.right:
             self.right.visual_print(indent + 4)
@@ -32,6 +33,7 @@ class Node:
         if self.left:
             self.left.visual_print(indent + 4)
 
+    # prints nodes and their frequencies
     def print(self, node=None):
 
         if not node:
@@ -49,13 +51,6 @@ class Node:
 class Tree:
 
     def __init__(self, src, symbols):
-        # init dna sequence
-        # self.seq = seq
-
-        # calculate frequencies
-        # freq = {}
-        # for base in seq:
-        #     freq[base] = freq.get(base, 0) + 1
         self.cookbook = {}
         self.c_cookbook = {}
         self.global_cookbook = {}
@@ -68,27 +63,23 @@ class Tree:
             prob[sym] = round(freq[sym]/len(src), 2)
 
 
-        # generate tree e.g. [A3, G2, ...]
+        # generate initial tree e.g. [A3, G2, ...]
         self.tree = []
         for sym in prob:
             self.tree.append(Node(symbol=sym, pfreq=prob[sym]))
 
+    # prints each node
     def print(self):
         # print nodes
         for node in self.tree:
             node.print()
         print()
 
+    # readable version of the tree, but becomes crowded for large input
     def visual_print(self):
         # print nodes
         for node in self.tree:
             node.visual_print()
-        print()
-
-    def top_level_print(self):
-        # print nodes
-        for node in self.tree:
-            print(f'{node.symbol}{node.pfreq}', end=' ')
         print()
 
     # returns the first and second minimum nodes by pfreq, this is used for merging
@@ -111,7 +102,7 @@ class Tree:
 
         return f_min, s_min
 
-    # merges the tree once
+    # merges the tree once: to complete the tree this function is called multiple times
     def merge_once(self):
         # get first and second minimums
         f_min, s_min = self.get_minimums()
@@ -146,6 +137,7 @@ class Tree:
         if node.left:
             self.set_distance(node.left, distance + 1)
 
+    # sets the encoding or rather "path" of each node, according to GC and RunLength constraints
     def set_path(self, node=None, path=''):
         if not node and path != '':
             return
@@ -168,7 +160,7 @@ class Tree:
             self.set_path(node.right, path + base)
 
 
-# command line args
+# command line args: each algorithm takes input file in command line
 if len(sys.argv[1:]) != 1:
     print(f'Error: invalid args')
     print(f'Usage: py {sys.argv[0]} <input file>')
@@ -180,31 +172,36 @@ file = open(filepath, 'r')
 src = file.read()
 file.close()
 
+
+# calculate symbols and their frequencies
 src_binary = ''
 sliced = []
 symbols = {}
 for char in src:
-    block = '0'+bin(ord(char))[2:]
-    src_binary += block
-    sliced.append(block)
-    symbols[block] = symbols.get(block, 0) + 1
+    block = '0'+bin(ord(char))[2:]  # gets ascii of the char
+    src_binary += block             # generates the binary block by block
+    sliced.append(block)            # add blocks in an array
+    symbols[block] = symbols.get(block, 0) + 1  # stores symbols and their frequencies
 
-print(f'\nsymbols: {symbols}')
+# print(f'\nsymbols: {symbols}')
 
+# generate tree
 tree = Tree(src, symbols)
 
+# print tree
 print('\nInitial nodes:')
 tree.print()
 print()
 
+# constructing m.v. huffman tree by merging nodes repeatedly
 while len(tree.tree) > 1:
     tree.merge_once()
 print()
 
-print('\nHuffman Tree: \n')
-tree.set_distance()
-tree.set_path()
-tree.visual_print()
+print('\nM.V. Huffman Tree: \n')
+tree.set_distance()     # sets distance from root to each node
+tree.set_path()         # generates the encoding (which is the path in the tree) for each char
+tree.visual_print()     # prints the resulting tree
 
 # generate complimentary cookbook
 for sym in tree.cookbook:
@@ -223,13 +220,15 @@ for sym in tree.cookbook:
 
     tree.c_cookbook[c_strand] = strand
 
+# global cook book is used to determine how to switch between original and complementary cook books
 tree.global_cookbook = {True: tree.cookbook, False: tree.c_cookbook}
 print(f'\ntree global cookbook: {tree.global_cookbook}')
 
 # generate encoding
 encoding = ''
-current_cookbook = True
+current_cookbook = True     # flags the current cook book, either original or complimentary
 for block in sliced:
+    # get the encoding of this symbol (block)
     coding = get_key_from_val(block, tree.global_cookbook[current_cookbook])
     if len(coding) % 2 != 0:
         # flip cookbook
@@ -240,7 +239,7 @@ print(f'\ntree.path_sym: \n{tree.path_sym}')
 print(f'\nsliced: \n{sliced}')
 print(f'\nencoding:\n{encoding} \n')
 
-
+# decoding algorithm is applied to ensure we can get the original string back
 decoding = ''
 dnadecoding = ''
 current_cookbook = True
@@ -254,7 +253,7 @@ while len(encoding_tmp) != 0:
     # should look in the current cookbook
     block = tree.global_cookbook[current_cookbook].get(olgo, None)
 
-    # while olgo is not a path
+    # while olgo is not a path(encoding)
     while block is None:
         next_base = encoding_tmp[idx + 1: idx + 2]
         idx += 1
@@ -276,7 +275,7 @@ print()
 if encoding == dnadecoding:
     print('\nDecoded successfully')
 
-    # calculate metrics
+    # calculate evaluation metrics
     bits = len(sliced)*8
     bases = len(dnadecoding)
     information_density = bits/bases

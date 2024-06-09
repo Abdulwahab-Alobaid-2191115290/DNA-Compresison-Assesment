@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import auxiliary as aux
 
-# command line args
+# command line args: each algorithm takes input file in command line
 if len(sys.argv[1:]) != 1:
     print(f'Error: invalid args')
     print(f'Usage: py {sys.argv[0]} <input file>')
@@ -17,21 +17,7 @@ file = open(filepath, 'r')
 src = file.read()
 file.close()
 
-# function that converts from two-bit binary to a nucleotide
-def bin_to_base(bin):
-    if bin == '00':
-        return 'A'
-
-    if bin == '01':
-        return 'T'
-
-    if bin == '10':
-        return 'C'
-
-    if bin == '11':
-        return 'G'
-
-# creating tree nodes
+# tree nodes def
 class NodeTree(object):
 
     def __init__(self, left=None, right=None):
@@ -48,7 +34,7 @@ class NodeTree(object):
         return '%s_%s' % (self.left, self.right)
 
 
-# main function implementing huffman coding
+# implementing huffman coding
 def huffman_code_tree(node, left=True, binString=''):
     if type(node) is str:
         return {node: binString}
@@ -67,9 +53,11 @@ for c in src:
     else:
         freq[c] = 1
 
+# sorting symbols
 freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
 nodes = freq
 
+# generating tree
 while len(nodes) > 1:
     (key1, c1) = nodes[-1]
     (key2, c2) = nodes[-2]
@@ -86,30 +74,36 @@ print('----------------------')
 for (char, frequency) in freq:
     print(' %-4r |%12s' % (char, huffmanCode[char]))
 
+# converting back to binary
 src_binary = ''
 for char in src:
     src_binary += huffmanCode[char]
 print(src_binary)
 
+# make sure result is even so base translation is accurate
 if len(src_binary) % 2 != 0:
     src_binary = '0' + src_binary
 
+# convert to DNA representation
 encoding = ''
 src_binary_tmp = src_binary
 while len(src_binary_tmp) != 0:
     bin = src_binary_tmp[:2]
-    encoding += bin_to_base(bin)
+    encoding += aux.bin_to_base(bin)
     src_binary_tmp = src_binary_tmp[2:]
-print(encoding)
 
+# calculate evaluation metrics
 bits = len(src)*8
 bases = len(encoding)
 information_density = bits / bases
 compressed_size = len(encoding)*2
 compression_ratio = bits/compressed_size
 
+# print results
+print(encoding)
 print(f'information density {bits / bases}, compression ratio {compression_ratio}%')
 
+# generate output file
 aux.output(
         method='huffman',
         filepath=filepath,
