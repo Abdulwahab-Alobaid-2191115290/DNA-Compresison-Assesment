@@ -18,7 +18,7 @@ def output(method, filepath, content_size, information_density, compression_rati
         exit(-1)
 
     # if file exists, append new entry, else create the file and add the headers
-    output_path = f'./src/output/{method}_{filename}.csv'
+    output_path = f'./src/output/{filename}.csv'
     if not os.path.exists(output_path):
         file = open(output_path, 'w')
         file.write(f'method,filename,extension,content_size,information_density,compression_ratio\n')
