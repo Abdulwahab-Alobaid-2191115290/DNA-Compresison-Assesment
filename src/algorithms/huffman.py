@@ -78,7 +78,7 @@ for (char, frequency) in freq:
 src_binary = ''
 for char in src:
     src_binary += huffmanCode[char]
-print(src_binary)
+# print(src_binary)
 
 # make sure result is even so base translation is accurate
 if len(src_binary) % 2 != 0:

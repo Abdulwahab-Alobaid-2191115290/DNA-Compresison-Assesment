@@ -1,2 +1,2 @@
 method,filename,extension,content_size,information_density,compression_ratio
-huffman,abracadabra,txt,11,7.333333333333333,3.6666666666666665
+mv_huffman,anotherinput,txt,709,1.8367875647668395,0.9183937823834197

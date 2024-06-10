@@ -60,7 +60,7 @@ class Tree:
         freq = symbols
         prob = {}
         for sym in freq:
-            prob[sym] = round(freq[sym]/len(src), 2)
+            prob[sym] = round(freq[sym]/len(src), 9)
 
 
         # generate initial tree e.g. [A3, G2, ...]
@@ -84,21 +84,10 @@ class Tree:
 
     # returns the first and second minimum nodes by pfreq, this is used for merging
     def get_minimums(self):
-        # first minimum
-        f_min = self.tree[0]
-        for node in self.tree:
-            if node.pfreq < f_min.pfreq:
-                f_min = node
 
-        # second minimum
-        s_min = self.tree[0]
-        for node in self.tree:
-            if node.pfreq < s_min.pfreq and (node.symbol != f_min.symbol):
-                s_min = node
+        self.tree.sort(key=lambda x: x.pfreq)
 
-        # if tree contains only two children then they are the only nodes to be merged
-        if len(self.tree) == 2:
-            f_min, s_min = self.tree[0], self.tree[1]
+        f_min, s_min = self.tree[0], self.tree[1]
 
         return f_min, s_min
 
@@ -106,14 +95,14 @@ class Tree:
     def merge_once(self):
         # get first and second minimums
         f_min, s_min = self.get_minimums()
-
         # merge by creating a node having the sum of both nodes freq
-        print(f'merging {f_min.symbol}{f_min.pfreq} >< {s_min.symbol}{s_min.pfreq}')
+        # print(f'merging {f_min.symbol}{f_min.pfreq} >< {s_min.symbol}{s_min.pfreq}')
         merged = Node(symbol=f_min.symbol + ';' + s_min.symbol, pfreq=f_min.pfreq + s_min.pfreq, left=f_min, right=s_min)
 
-        # update the tree
+        # update the tree: add the new node and remove extra node
         self.tree = [node for node in self.tree if node.symbol != f_min.symbol and node.symbol != s_min.symbol]
         self.tree.append(merged)
+        return merged
 
     # sets the distance to the root from each node: should only be called when huffman tree is completed
     # when calling the function, the tree contains only one element i.e. the root
@@ -151,7 +140,7 @@ class Tree:
 
         node.path = path
         if not node.right and not node.left:
-            print(f'{node.symbol}: {node.path}')
+            # print(f'{node.symbol}: {node.path}')
             self.path_sym[path] = node.symbol
             self.cookbook[path] = node.symbol
 
@@ -189,20 +178,23 @@ for char in src:
 tree = Tree(src, symbols)
 
 # print tree
-print('\nInitial nodes:')
-tree.print()
+# tree.print()
 print()
 
 # constructing m.v. huffman tree by merging nodes repeatedly
+print('Merging..')
 while len(tree.tree) > 1:
-    tree.merge_once()
+    m = tree.merge_once()
+
+
 print()
 
-print('\nM.V. Huffman Tree: \n')
+print('Setting path and distance\n')
 tree.set_distance()     # sets distance from root to each node
 tree.set_path()         # generates the encoding (which is the path in the tree) for each char
-tree.visual_print()     # prints the resulting tree
+# tree.visual_print()     # prints the resulting tree
 
+print('Generating complimentary cookbook')
 # generate complimentary cookbook
 for sym in tree.cookbook:
     strand = tree.cookbook[sym]
@@ -235,9 +227,9 @@ for block in sliced:
         current_cookbook = not current_cookbook
     encoding += coding
 
-print(f'\ntree.path_sym: \n{tree.path_sym}')
-print(f'\nsliced: \n{sliced}')
-print(f'\nencoding:\n{encoding} \n')
+# print(f'\ntree.path_sym: \n{tree.path_sym}')
+# print(f'\nsliced: \n{sliced}')
+# print(f'\nencoding:\n{encoding} \n')
 
 # decoding algorithm is applied to ensure we can get the original string back
 decoding = ''
@@ -268,7 +260,7 @@ while len(encoding_tmp) != 0:
     decoding += block
     dnadecoding += olgo
     encoding_tmp = encoding_tmp[idx + 1:]
-    print(olgo, end= '')
+    # print(olgo, end= '')
 print()
 
 # verification
