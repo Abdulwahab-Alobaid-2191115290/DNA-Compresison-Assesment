@@ -242,7 +242,8 @@ while len(encoding_tmp) != 0:
     idx = 0
     olgo = encoding_tmp[idx]
 
-    # should look in the current cookbook
+    # should look in the current cookbook: e.g. if olgo is AC and cookbook includes {'AG': '1010'} then block is '1010'
+    # else block becomes none
     block = tree.global_cookbook[current_cookbook].get(olgo, None)
 
     # while olgo is not a path(encoding)
